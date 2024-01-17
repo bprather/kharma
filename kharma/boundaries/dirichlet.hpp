@@ -37,8 +37,9 @@
 
 namespace KBoundaries {
 
+// TODO(CEP) privatize probably
 void DirichletImpl(MeshBlockData<Real> *rc, BoundaryFace bface, bool coarse, bool set);
-void DirichletSetFromField(MeshBlockData<Real> *rc, VariablePack<Real> q, std::string prefix,
+void DirichletSetFromField(MeshBlockData<Real> *rc, VariablePack<Real> &q, VariablePack<Real> &bound,
                                         BoundaryFace bface, bool coarse, bool set, bool do_face);
 
 template <BoundaryFace bface>
