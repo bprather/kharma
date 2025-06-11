@@ -1,25 +1,25 @@
-/* 
+/*
  *  File: coordinate_systems.hpp
- *  
+ *
  *  BSD 3-Clause License
- *  
+ *
  *  Copyright (c) 2020, AFD Group at UIUC
  *  All rights reserved.
- *  
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- *  
+ *
  *  1. Redistributions of source code must retain the above copyright notice, this
  *     list of conditions and the following disclaimer.
- *  
+ *
  *  2. Redistributions in binary form must reproduce the above copyright notice,
  *     this list of conditions and the following disclaimer in the documentation
  *     and/or other materials provided with the distribution.
- *  
+ *
  *  3. Neither the name of the copyright holder nor the names of its
  *     contributors may be used to endorse or promote products derived from
  *     this software without specific prior written permission.
- *  
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -50,12 +50,12 @@
  * Embedding/Base systems implemented:
  * Minkowski space: Cartesian and Spherical coordinates
  * Kerr Space: Spherical KS and BL coordinates
- * 
+ *
  * Transformations:
  * Nulls in Cartesian and Spherical coordinates
  * "Modified": r=exp(x1), th=pi*x2 + (1-hslope)*etc
  * "Funky" modified: additional non-invertible cylindrization of th
- * 
+ *
  * TODO Cartesian KS base
  * TODO snake coordinate transform for Cartesian Minkowski
  * TODO CMKS, MKS3 transforms, proper Cartesian<->Spherical functions stolen from e.g. coordinate_utils.hpp
@@ -346,37 +346,34 @@ class JMN1BLCoords {
         const GReal a;
         const GReal def_Rb;
         static constexpr bool spherical = true;
-    
+
         KOKKOS_FUNCTION JMN1BLCoords(GReal spin, GReal Rb): a(spin), def_Rb(Rb) {}
-    
+
         KOKKOS_INLINE_FUNCTION void gcov_embed(const GReal Xembed[GR_DIM], Real gcov[GR_DIM][GR_DIM]) const
         {
             const GReal r = Xembed[1];
             const GReal th = excise(excise(Xembed[2], 0.0, SMALL), M_PI, SMALL);
             const GReal cth = m::cos(th), sth = m::sin(th);
             const GReal s2 = sth * sth;
-    
-            const GReal gtt=0.;
-            const GReal gg=0.;
-            const GReal gthth=0.;
 
             const GReal sigg = 1.0 / (def_Rb - 1.0);
             const GReal rb = (1.0 - sigg) * def_Rb;
+            GReal gtt, gg, gthth;
             if (r < def_Rb) {
-                const GReal gtt = (1.0 - 2.0 / def_Rb) * m::pow((r / rb), 2.0 * sigg);
-                const GReal gg = 1.0;
-                const GReal gthth = def_Rb * def_Rb * m::pow(r / rb, 2.0 - 2.0 * sigg);
+                gtt = (1.0 - 2.0 / def_Rb) * m::pow((r / rb), 2.0 * sigg);
+                gg = 1.0;
+                gthth = def_Rb * def_Rb * m::pow(r / rb, 2.0 - 2.0 * sigg);
             } else {
-                const GReal gtt = (1.0 - 2.0 / r);
-                const GReal gg = 1.0;
-                const GReal gthth = r * r;
+                gtt = (1.0 - 2.0 / r);
+                gg = 1.0;
+                gthth = r * r;
             }
-    
+
             const GReal twoF = (1.0 / m::sqrt(gg) - (gtt / gg)) * gthth;
             const GReal Delta = gthth * (gtt / gg) + a * a;
             const GReal Sigma = gthth / m::sqrt(gg) + a * a * cth * cth;
             const GReal PII = m::pow(gthth / m::sqrt(gg) + a * a, 2.0) - Delta * a * a * s2;
-    
+
             gzero2(gcov);
 
             gcov[0][0] = -(1. - twoF/Sigma);
@@ -397,122 +394,111 @@ class JMN1KSCoords {
         const GReal a;
         const GReal def_Rb;
         static constexpr bool spherical = true;
-    
+
         KOKKOS_FUNCTION JMN1KSCoords(GReal spin, GReal Rb): a(spin), def_Rb(Rb) {}
-    
+
         KOKKOS_INLINE_FUNCTION void gcov_embed(const GReal Xembed[GR_DIM], Real gcov[GR_DIM][GR_DIM]) const
         {
             const GReal r = Xembed[1];
             const GReal th = excise(excise(Xembed[2], 0.0, SMALL), M_PI, SMALL);
             const GReal cth = m::cos(th), sth = m::sin(th);
             const GReal s2 = sth * sth;
-    
-            const GReal gtt=0.;
-            const GReal gg=0.;
-            const GReal gthth=0.;
 
             const GReal sigg = 1.0 / (def_Rb - 1.0);
             const GReal rb = (1.0 - sigg) * def_Rb;
+            GReal gtt, gg, gthth;
             if (r < def_Rb) {
-                const GReal gtt = (1.0 - 2.0 / def_Rb) * m::pow((r / rb), 2.0 * sigg);
-                const GReal gg = 1.0;
-                const GReal gthth = def_Rb * def_Rb * m::pow(r / rb, 2.0 - 2.0 * sigg);
+                gtt = (1.0 - 2.0 / def_Rb) * m::pow((r / rb), 2.0 * sigg);
+                gg = 1.0;
+                gthth = def_Rb * def_Rb * m::pow(r / rb, 2.0 - 2.0 * sigg);
             } else {
-                const GReal gtt = (1.0 - 2.0 / r);
-                const GReal gg = 1.0;
-                const GReal gthth = r * r;
+                gtt = (1.0 - 2.0 / r);
+                gg = 1.0;
+                gthth = r * r;
             }
-    
+
             const GReal twoF = (1.0 / m::sqrt(gg) - (gtt / gg)) * gthth;
             const GReal Delta = gthth * (gtt / gg) + a * a;
             const GReal Sigma = gthth / m::sqrt(gg) + a * a * cth * cth;
             const GReal PII = m::pow(gthth / m::sqrt(gg) + a * a, 2.0) - Delta * a * a * s2;
-    
+
             gzero2(gcov);
-    
+
             gcov[0][0] = -(1.0 - twoF / Sigma);
             gcov[0][1] = twoF / Sigma;
             gcov[0][3] = -twoF / Sigma * a * s2;
-    
+
             gcov[1][0] = gcov[0][1];
             gcov[1][1] = (1.0 + twoF / Sigma);
             gcov[1][3] = -(1.0 + twoF / Sigma) * a * s2;
-    
+
             gcov[2][2] = Sigma;
-    
+
             gcov[3][0] = gcov[0][3];
             gcov[3][1] = gcov[1][3];
             gcov[3][3] = PII / Sigma * s2;
         }
-    
+
         // Transform a contravariant vector from BL to KS
         KOKKOS_INLINE_FUNCTION void vec_from_bl(const GReal Xembed[GR_DIM], const Real vcon_bl[GR_DIM], Real vcon[GR_DIM]) const
         {
             const GReal r = Xembed[1];
-            const GReal gtt=0.;
-            const GReal gg=0.;
-            const GReal gthth=0.;
 
             const GReal sigg = 1.0 / (def_Rb - 1.0);
             const GReal rb = (1.0 - sigg) * def_Rb;
+            GReal gtt, gg, gthth;
             if (r < def_Rb) {
-                const GReal gtt = (1.0 - 2.0 / def_Rb) * m::pow((r / rb), 2.0 * sigg);
-                const GReal gg = 1.0;
-                const GReal gthth = def_Rb * def_Rb * m::pow(r / rb, 2.0 - 2.0 * sigg);
+                gtt = (1.0 - 2.0 / def_Rb) * m::pow((r / rb), 2.0 * sigg);
+                gg = 1.0;
+                gthth = def_Rb * def_Rb * m::pow(r / rb, 2.0 - 2.0 * sigg);
             } else {
-                const GReal gtt = (1.0 - 2.0 / r);
-                const GReal gg = 1.0;
-                const GReal gthth = r * r;
+                gtt = (1.0 - 2.0 / r);
+                gg = 1.0;
+                gthth = r * r;
             }
-    
+
             const GReal twoF = (1.0 / m::sqrt(gg) - (gtt / gg)) * gthth;
             const GReal Delta = gthth * (gtt / gg) + a * a;
-    
-            Real trans[GR_DIM][GR_DIM];
+
+            GReal trans[GR_DIM][GR_DIM];
             DLOOP2 trans[mu][nu] = (mu == nu);
             trans[0][1] = twoF / Delta;
             trans[3][1] = a / Delta;
-    
+
             gzero(vcon);
-            DLOOP1 {
-                DLOOP2 vcon[mu] += trans[mu][nu] * vcon_bl[nu];
-            }
+            DLOOP2 vcon[mu] += trans[mu][nu] * vcon_bl[nu];
         }
-    
+
         // Transform a contravariant vector from KS to BL
         KOKKOS_INLINE_FUNCTION void vec_to_bl(const GReal Xembed[GR_DIM], const Real vcon_bl[GR_DIM], Real vcon[GR_DIM]) const
         {
             const GReal r = Xembed[1];
-            const GReal gtt=0.;
-            const GReal gg=0.;
-            const GReal gthth=0.;
 
             const GReal sigg = 1.0 / (def_Rb - 1.0);
             const GReal rb = (1.0 - sigg) * def_Rb;
+            GReal gtt, gg, gthth;
             if (r < def_Rb) {
-                const GReal gtt = (1.0 - 2.0 / def_Rb) * m::pow((r / rb), 2.0 * sigg);
-                const GReal gg = 1.0;
-                const GReal gthth = def_Rb * def_Rb * m::pow(r / rb, 2.0 - 2.0 * sigg);
+                gtt = (1.0 - 2.0 / def_Rb) * m::pow((r / rb), 2.0 * sigg);
+                gg = 1.0;
+                gthth = def_Rb * def_Rb * m::pow(r / rb, 2.0 - 2.0 * sigg);
             } else {
-                const GReal gtt = (1.0 - 2.0 / r);
-                const GReal gg = 1.0;
-                const GReal gthth = r * r;
+                gtt = (1.0 - 2.0 / r);
+                gg = 1.0;
+                gthth = r * r;
             }
-    
+
             const GReal twoF = (1.0 / m::sqrt(gg) - (gtt / gg)) * gthth;
             const GReal Delta = gthth * (gtt / gg) + a * a;
-    
+
             Real trans[GR_DIM][GR_DIM], rtrans[GR_DIM][GR_DIM];
             DLOOP2 rtrans[mu][nu] = (mu == nu);
             rtrans[0][1] = twoF / Delta;
             rtrans[3][1] = a / Delta;
-    
+
             invert(&rtrans[0][0], &trans[0][0]);
 
             gzero(vcon);
-            DLOOP1 {
-                DLOOP2 vcon[mu] += rtrans[mu][nu] * vcon_bl[nu];
-            }
+            DLOOP2 vcon[mu] += rtrans[mu][nu] * vcon_bl[nu];
         }
     };
 
@@ -859,7 +845,7 @@ class WidepoleTransform {
         GReal smoothness;
 
         // Constructor
-        KOKKOS_FUNCTION WidepoleTransform(GReal lin_frac_in, GReal smoothness_in, GReal n2_in, GReal n3_in): lin_frac(lin_frac_in), smoothness(smoothness_in), n2(n2_in), n3(n3_in) 
+        KOKKOS_FUNCTION WidepoleTransform(GReal lin_frac_in, GReal smoothness_in, GReal n2_in, GReal n3_in): lin_frac(lin_frac_in), smoothness(smoothness_in), n2(n2_in), n3(n3_in)
         {
             GReal n3_temp = n3;
             if (n3 < M_PI) n3_temp = n2;

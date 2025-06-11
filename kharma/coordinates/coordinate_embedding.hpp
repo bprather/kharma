@@ -1,25 +1,25 @@
-/* 
+/*
  *  File: coordinate_embedding.hpp
- *  
+ *
  *  BSD 3-Clause License
- *  
+ *
  *  Copyright (c) 2020, AFD Group at UIUC
  *  All rights reserved.
- *  
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- *  
+ *
  *  1. Redistributions of source code must retain the above copyright notice, this
  *     list of conditions and the following disclaimer.
- *  
+ *
  *  2. Redistributions in binary form must reproduce the above copyright notice,
  *     this list of conditions and the following disclaimer in the documentation
  *     and/or other materials provided with the distribution.
- *  
+ *
  *  3. Neither the name of the copyright holder nor the names of its
  *     contributors may be used to endorse or promote products derived from
  *     this software without specific prior written permission.
- *  
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -61,10 +61,10 @@
  * This class keeps track of the base coordinates and the map, defining generic functions guaranteed to return
  * something in the native or embedding coordinate system, given something else -- e.g. covariant metric "gcov"
  * at a native coordinate location Xnative.
- * 
+ *
  * Each system or transform must be a class defining a basic interface:
  * see coordinate_systems.hpp for the current examples.
- * 
+ *
  * Specifically, the BaseCoords class must implement:
  * * gcov_embed
  * And the Transform class must implement:
@@ -72,7 +72,7 @@
  * * coord_to_native
  * * dxdX_to_embed
  * * dxdX_to_native
- * 
+ *
  * Each possible class is added to a couple of mpark::variant containers, and then to the chains of if statements below.
  *
  * TODO convenience functions.  Intelligent r/th/phi, x/y/z, KS and BL, a, etc by auto-translating contents
@@ -264,7 +264,7 @@ class CoordinateEmbedding {
                 const GReal a = get_a();
                 return 1 + m::sqrt(1 - a * a);
             } else {
-                return 0.1;
+                return 0.0;
             }
         }
         KOKKOS_INLINE_FUNCTION GReal get_a() const
@@ -275,7 +275,11 @@ class CoordinateEmbedding {
         }
         KOKKOS_INLINE_FUNCTION GReal get_rb() const
         {
-            return mpark::get<JMN1KSCoords>(base).def_Rb;
+            if (mpark::holds_alternative<JMN1KSCoords>(base)) {
+                return mpark::get<JMN1KSCoords>(base).def_Rb;
+            } else {
+                return 0.;
+            }
         }
 
 
